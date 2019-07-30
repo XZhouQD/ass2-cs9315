@@ -8,6 +8,7 @@
 #include "hash.h"
 #include "chvec.h"
 #include "bits.h"
+#include <limits.h>
 
 // return number of bytes/chars in a tuple
 
@@ -75,9 +76,39 @@ Bits tupleHash(Reln r, Tuple t)
 	char **vals = malloc(nvals*sizeof(char *));
 	assert(vals != NULL);
 	tupleVals(t, vals);
-	Bits hash = hash_any((unsigned char *)vals[0],strlen(vals[0]));
-	bitsString(hash,buf);
-	printf("hash(%s) = %s\n", vals[0], buf);
+	Bits hash[nvals];
+
+	//hash each attribute, store in hash
+	for (int i = 0; i < nvals; i++) {
+		hash[i] = hash_any(vals[i], strlen(vals[i]));
+		bitsString(hash[i], buf);
+		printf("hash(%s) = %s\n", vals[i], buf);
+	}
+
+	//use choice vector to insert bits
+	ChVecItem * choiceVector = chvec(r); //get choice vector from relation
+	char newBuf[MAXBITS+1]; //new hash buffer with cv
+	for (int i = 0; i < MAXBITS; i++) { //for each bit from cv
+		Byte attr = choiceVector[i].att;
+		Byte bit = choiceVector[i].bit;
+		bitsString(hash[attr], buf);
+		//remove space
+		int j = 0, k = 0;
+		for (j = 0; buf[j] != '\0'; j++)
+			if (buf[j] != ' ')
+				buf[k++] = buf[j];
+		newBuf[MAXBITS-1-i] = buf[MAXBITS-1-bit]; //store relative bit in newBuffer
+	}
+
+	//newBuffer into hash bits
+	Bits result = 0;
+	for (int i = 0; i < MAXBITS; i++)
+		if (newBuf[i] == '1')
+			result = setBit(result, MAXBITS-1-i); //reverse storage of result
+
+	showBits(result, buf);
+	printf("Choice Vector hash value: %s\n", buf);
+
 	return hash;
 }
 
