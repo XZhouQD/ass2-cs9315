@@ -80,7 +80,7 @@ Bits tupleHash(Reln r, Tuple t)
 
 	//hash each attribute, store in hash
 	for (int i = 0; i < nvals; i++) {
-		hash[i] = hash_any(vals[i], strlen(vals[i]));
+		hash[i] = hash_any((unsigned char *)vals[i], strlen(vals[i]));
 		bitsString(hash[i], buf);
 		printf("hash(%s) = %s\n", vals[i], buf);
 	}
@@ -106,10 +106,10 @@ Bits tupleHash(Reln r, Tuple t)
 		if (newBuf[i] == '1')
 			result = setBit(result, MAXBITS-1-i); //reverse storage of result
 
-	showBits(result, buf);
+	bitsString(result, buf);
 	printf("Choice Vector hash value: %s\n", buf);
 
-	return hash;
+	return result;
 }
 
 // compare two tuples (allowing for "unknown" values)
