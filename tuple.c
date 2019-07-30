@@ -8,7 +8,6 @@
 #include "hash.h"
 #include "chvec.h"
 #include "bits.h"
-#include <limits.h>
 
 // return number of bytes/chars in a tuple
 
