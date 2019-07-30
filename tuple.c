@@ -8,7 +8,6 @@
 #include "hash.h"
 #include "chvec.h"
 #include "bits.h"
-#include <limits.h>
 
 // return number of bytes/chars in a tuple
 
@@ -35,6 +34,26 @@ Tuple readTuple(Reln r, FILE *in)
 	return copyString(line); // needs to be free'd sometime
 }
 
+Tuple nextTuple(FILE *in,PageID pid,Offset currTup)
+{
+	char tuple[MAXTUPLEN];
+	Offset postionBase = PAGESIZE * pid + 2 * sizeof(Offset) + sizeof(Count);
+    
+    //from the start of file, move to postionBase + current tuple 
+	fseek(in, postionBase + currTup, SEEK_SET);
+	// save to file *in
+	fgets(tuple, MAXTUPLEN - 1, in);
+	
+	//count how many fields we have
+	char *i;
+	int numberOfFields = 1;
+	//start from the first, stop if empty
+	for (i = tuple; *i !='\0'; i++)
+	    //if find , so it is a seperate field. 
+	    if(*i ==',')
+	        numberOfFields++;
+	return copyString(tuple); // needed to be free later
+}
 // extract values into an array of strings
 
 void tupleVals(Tuple t, char **vals)
@@ -80,7 +99,7 @@ Bits tupleHash(Reln r, Tuple t)
 
 	//hash each attribute, store in hash
 	for (int i = 0; i < nvals; i++) {
-		hash[i] = hash_any(vals[i], strlen(vals[i]));
+		hash[i] = hash_any((unsigned char *)vals[i], strlen(vals[i]));
 		bitsString(hash[i], buf);
 		printf("hash(%s) = %s\n", vals[i], buf);
 	}
@@ -106,10 +125,10 @@ Bits tupleHash(Reln r, Tuple t)
 		if (newBuf[i] == '1')
 			result = setBit(result, MAXBITS-1-i); //reverse storage of result
 
-	showBits(result, buf);
+	bitsString(result, buf);
 	printf("Choice Vector hash value: %s\n", buf);
 
-	return hash;
+	return result;
 }
 
 // compare two tuples (allowing for "unknown" values)
