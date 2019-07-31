@@ -216,13 +216,13 @@ void splitRelation(Reln r) {
 		Page page = getPage(f, pid);
 		if(pageNTuples(page) == 0) break; //no tuple in the page, break
 
-		Tuple t = nextTuple(file, pid, currTupleOffset); //get current tuple
+		Tuple t = nextTuple(f, pid, currTupleOffset); //get current tuple
 
 		// hash the current tuple and check its new pageID
 		Bits hash = tupleHash(r, t);
 		Bits newID = getLower(hash, r->depth + 1); //remember to add 1 for correct depth
 
-		if (newID == page) //if the tuple should remain at the original page
+		if (newID == pid) //if the tuple should remain at the original page
 			origin[i++] = copyString(t);
 		else // the tuple will be insert into new page
 			if (insertIntoPage(r, t, newID) == NO_PAGE)
@@ -230,14 +230,14 @@ void splitRelation(Reln r) {
 		currTupleOffset += strlen(t) + 1; //add '\0' position for the tuple, since it is simply a string
 		nTuples ++; //add tuple count
 
-		if (nTuples >= pageTuples(page)) {//if there are tuples more than one page
+		if (nTuples >= pageNTuples(page)) {//if there are tuples more than one page
 			//add another page and change to overflow
-			Page newPage = newPage();
-			putPage(f, pid, newPage);
+			Page newpage = newPage();
+			putPage(f, pid, newpage);
 			pid = pageOvflow(page); //get overflow page id
 			nTuples = 0; //reset tuple count
 			currTupleOffset = 0; //reset tuple overflow
-			file = r->ovflow; //point to overflow position
+			f = r->ovflow; //point to overflow position
 		}
 		free(t); //free original tuple, they are already in origin storage
 	}
@@ -263,10 +263,10 @@ PageID insertIntoPage(Reln r, Tuple t, PageID pid) {
 	Page page = getPage(r->data, pid);
 
 	if (addToPage(page, t) == OK) {
-		putPage(r->Data, pid, page);
+		putPage(r->data, pid, page);
 		return pid;
 	}
-	if(pageOvflow(pg) == NO_PAGE) { //full of tuple, need overflow page
+	if(pageOvflow(page) == NO_PAGE) { //full of tuple, need overflow page
 		PageID newPid = addPage(r->ovflow);
 		pageSetOvflow(page, newPid); //need overflow page
 		putPage(r->data, pid, page); //put the page in
@@ -280,7 +280,7 @@ PageID insertIntoPage(Reln r, Tuple t, PageID pid) {
 		overflowPid = pageOvflow(page);
 		while( overflowPid != NO_PAGE ) { //traval through overflow page chain
 			overflowPage = getPage(r->ovflow, overflowPid);
-			if(addtoPage(overflowPage, t) != OK) { //full, try next page
+			if(addToPage(overflowPage, t) != OK) { //full, try next page
 				prevPage = overflowPage; //update prev for record
 				prevPid = overflowPid;
 				overflowPid = pageOvflow(overflowPage); //get next overflow page
@@ -295,7 +295,7 @@ PageID insertIntoPage(Reln r, Tuple t, PageID pid) {
 		Page newPage = getPage(r->ovflow, newPid);
 		if (addToPage(newPage, t) != OK) return NO_PAGE;
 		putPage(r->ovflow, newPid, newPage); //put into overflow
-		pageSetOvflow(prevPage, newPage); //link the overflow chain
+		pageSetOvflow(prevPage, newPid); //link the overflow chain
 		putPage(r->ovflow, prevPid, prevPage); //update the page
 		return pid;
 	}

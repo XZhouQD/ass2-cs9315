@@ -18,6 +18,8 @@ Reln openRelation(char *name, char *mode);
 void closeRelation(Reln r);
 Bool existsRelation(char *name);
 PageID addToRelation(Reln r, Tuple t);
+void splitRelation(Reln r);
+PageID insertIntoPage(Reln r, Tuple t, PageID pid);
 FILE *dataFile(Reln r);
 FILE *ovflowFile(Reln r);
 Count nattrs(Reln r);
