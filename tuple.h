@@ -21,4 +21,5 @@ void freeVals(char **vals, int nattrs);
 Bool tupleMatch(Reln r, Tuple t1, Tuple t2);
 void tupleString(Tuple t, char *buf);
 
+Tuple nextTuple(FILE *in,PageID pid,Offset currTup);
 #endif
