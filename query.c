@@ -72,8 +72,8 @@ Query startQuery(Reln r, char *q)
 	for (int i = 0; i < nvals; i++) {
 		if (attr[i] == NULL) fatal("Wrong number of attribute");
 		cmp[i] = strcmp(attr[i], "?");
-		if (!cmp[i]) {
-			hash[i] = 0x00000000;
+		if (!cmp[i]) { 
+			hash[i] = 0;
 		// hash
 		// equal
 		} else hash[i] = hash_any((unsigned char *) attr[i], strlen(attr[i]));
@@ -84,13 +84,11 @@ Query startQuery(Reln r, char *q)
 	ChVecItem *choiceVector = chvec(r);
 	for (int i = 0; i < MAXBITS; i++) {
 		// set
-		if (!cmp[choiceVector[i].att])
-			nknow = setBit(nknow, i);
+		if (!cmp[choiceVector[i].att]) nknow = setBit(nknow, i);
 		// mask set
 		comp = 0;
 		comp = setBit(comp, choiceVector[i].bit);
-		if ((comp & hash[choiceVector[i].att]) == 0)
-			qknow = unsetBit(qknow, i);
+		if ((comp & hash[choiceVector[i].att]) == 0) qknow = unsetBit(qknow, i);
 	}
 	bitsString(qknow,buf);
 	new->known = qknow;
