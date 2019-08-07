@@ -21,8 +21,6 @@ struct QueryRep {
 	int     is_ovflow; // are we in the overflow pages?
 	Offset  curtup;    // offset of current tuple within page
 	//TODO
-
-
 	// add struct attributes
 	int depth;    // linear hashing depth
 	Bits start;   // the begin value, pageId
@@ -64,7 +62,6 @@ Query startQuery(Reln r, char *q)
 
 	int cmp[nvals];
 	// create compare masks
-
 	Bits nknow = 0;
 	Bits comp = 0;
 	Bits hash[nvals];
@@ -208,8 +205,6 @@ Tuple getNextTuple(Query q)
 	// next get nothing
 	return NULL;
 }
-
-
 
 // clean up a QueryRep object and associated data
 void closeQuery(Query q)
