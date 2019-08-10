@@ -124,24 +124,27 @@ void closeRelation(Reln r)
 PageID addToRelation(Reln r, Tuple t)
 {
 	int nTuples = r->ntups + 1; //add one tuple count for the new incoming tuple
-	int nAttributes = r->nattrs;
+	int nAttributes = r->nattrs; //read in attribute count
 
-	int pageCapacity = PAGESIZE/(10*nAttributes);
+	int pageCapacity = PAGESIZE/(10*nAttributes); //calculate page tuple capacity
 
 	if (nTuples % pageCapacity == 0) //split needed
 		splitRelation(r);
 
-	Bits h, p;
+	Bits h, p; //hash and page bits
 	char buf[MAXBITS+1];
-	h = tupleHash(r,t);
+	char tupleBuf[MAXTUPLEN+1];
+	h = tupleHash(r,t); //get the hash of the incoming tuple
+	//find correct page to insert
 	if (r->depth == 0)
 		p = 1;
 	else {
 		p = getLower(h, r->depth);
 		if (p < r->sp) p = getLower(h, r->depth+1);
 	}
-	bitsString(h,buf); printf("hash = %s\n",buf);
-	bitsString(p,buf); printf("page = %s\n",buf);
+	tupleString(t, tupleBuf);
+	bitsString(h,buf); printf("hash(%s) = %s\n",tupleBuf, buf);
+//	bitsString(p,buf); printf("page = %s\n",buf);
 	Page pg = getPage(r->data,p);
 	if (addToPage(pg,t) == OK) {
 		putPage(r->data,p,pg);
