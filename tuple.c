@@ -37,13 +37,15 @@ Tuple readTuple(Reln r, FILE *in)
 Tuple nextTuple(FILE *in,PageID pid,Offset currTup)
 {
 	char tuple[MAXTUPLEN];
+	//positionBase = pages * pagesize + 2*sizeof(int) for offset + 1*sizeof(int) for count
+	//by keeping sizeof(Offset) instead of using sizeof(int), keep future development simple
 	Offset postionBase = PAGESIZE * pid + 2 * sizeof(Offset) + sizeof(Count);
-    
-    //from the start of file, move to postionBase + current tuple 
+
+	//from the start of file, move to postionBase + current tuple
 	fseek(in, postionBase + currTup, SEEK_SET);
 	// save to file *in
 	fgets(tuple, MAXTUPLEN - 1, in);
-	
+
 	//count how many fields we have
 	char *i;
 	int numberOfFields = 1;

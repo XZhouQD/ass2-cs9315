@@ -55,7 +55,7 @@ Query startQuery(Reln r, char *q)
 	new->unbits = 0;
 
 	// preparation
-	char buf[MAXBITS+1]; 
+	char buf[MAXBITS+1];
 	Count nvals = nattrs(r);
 	char *attr[nvals];
 	tupleVals(q, attr);
@@ -69,14 +69,13 @@ Query startQuery(Reln r, char *q)
 	for (int i = 0; i < nvals; i++) {
 		if (attr[i] == NULL) fatal("Wrong number of attribute");
 		cmp[i] = strcmp(attr[i], "?");
-		if (!cmp[i]) { 
-			hash[i] = 0;
+		if (!cmp[i]) hash[i] = 0;
 		// hash
 		// equal
-		} else hash[i] = hash_any((unsigned char *) attr[i], strlen(attr[i]));
+		else hash[i] = hash_any((unsigned char *) attr[i], strlen(attr[i]));
 		bitsString(hash[i],buf);
 	}
-	
+
 	// for known/unknown
 	ChVecItem *choiceVector = chvec(r);
 	for (int i = 0; i < MAXBITS; i++) {
@@ -104,10 +103,11 @@ Query startQuery(Reln r, char *q)
 	new->start = start;
 	// count unknow bits
 	int counts = 0;
+	int move = 1;
 	for (int i = 0; i < MAXBITS - 1; i++) {
-		int move = 1 << i;
 		if (i >= new->depth) break; // out of range
 		if (move & nknow) counts++;
+		move = move << 1;
 	}
 	new->unnum = counts;
 	// compy query tuple string
@@ -166,7 +166,7 @@ Tuple getNextTuple(Query q)
 			int unnums = q->unnum;
 			Bits uncount = q->unbits;
 
-			// eg: 1 << 1 => 0x00000010
+			// eg: 1 << 1 => 0b00000010
 			int new_mask = 1 << unnums;
 
 			// check condition
