@@ -101,7 +101,7 @@ Bits tupleHash(Reln r, Tuple t)
 	for (int i = 0; i < nvals; i++) {
 		hash[i] = hash_any((unsigned char *)vals[i], strlen(vals[i]));
 		bitsString(hash[i], buf);
-		printf("hash(%s) = %s\n", vals[i], buf);
+		//printf("hash(%s) = %s\n", vals[i], buf);
 	}
 
 	//use choice vector to insert bits
@@ -126,7 +126,7 @@ Bits tupleHash(Reln r, Tuple t)
 			result = setBit(result, MAXBITS-1-i); //reverse storage of result
 
 	bitsString(result, buf);
-	printf("Choice Vector hash value: %s\n", buf);
+	printf("Choice Vector hash value of (%s): %s\n", vals[0], buf);
 
 	return result;
 }
